@@ -20,6 +20,10 @@ class GameScene: SKScene {
     var livesImages = [SKSpriteNode]()
     var lives = 3
     
+    // Initialize the slice shape properties
+    var activeSliceBG: SKShapeNode!
+    var activeSliceFG: SKShapeNode!
+    
     override func didMoveToView(view: SKView) {
         // Create instance of sprite node
         let background = SKSpriteNode(imageNamed: "sliceBackground")
@@ -81,6 +85,27 @@ class GameScene: SKScene {
     }
     
     func createSlices() {
+        // Create an SKShapeNode instance for the activeSliceBG property
+        activeSliceBG = SKShapeNode()
+        // Set the z-position to 2 to make sure the slices are at top of z-position stack
+        activeSliceBG.zPosition = 2
         
+        // Create an SKShapeNode instance for the activeSliceFG property
+        activeSliceFG = SKShapeNode()
+        // Set the z-position
+        activeSliceFG.zPosition = 2
+        
+        // Set the stroke color and line width of activeSliceBG
+        activeSliceBG.strokeColor = UIColor(red: 1, green: 0.9, blue: 0, alpha: 1)
+        activeSliceBG.lineWidth = 9
+        
+        // Set the stroke color and line width of activeSliceFG
+        activeSliceFG.strokeColor = UIColor.whiteColor()
+        activeSliceFG.lineWidth = 5
+        
+        // Add the nodes to SKShapeNode objects to the Game Scene as child nodes
+        addChild(activeSliceBG)
+        addChild(activeSliceFG)
+    
     }
 }
