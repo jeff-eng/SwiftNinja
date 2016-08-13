@@ -24,6 +24,9 @@ class GameScene: SKScene {
     var activeSliceBG: SKShapeNode!
     var activeSliceFG: SKShapeNode!
     
+    // Store swipe points
+    var activeSlicePoints = [CGPoint]()
+    
     override func didMoveToView(view: SKView) {
         // Create instance of sprite node
         let background = SKSpriteNode(imageNamed: "sliceBackground")
@@ -48,7 +51,7 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-
+        
         
     }
    
@@ -107,5 +110,33 @@ class GameScene: SKScene {
         addChild(activeSliceBG)
         addChild(activeSliceFG)
     
+    }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        // Get the first touch object
+        guard let touch = touches.first else { return }
+        
+        // Store the location where user touched
+        let location = touch.locationInNode(self)
+        
+        // Add location where in the scene the user touched to the activeSlicePoints array
+        activeSlicePoints.append(location)
+        
+        // Redraw the slice shape
+        redrawActiveSlice()
+    }
+    
+    // This method gets called when user finishes touching the screen
+    override func touchesEnded(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        // Make the slice shapes fade out
+        activeSliceBG.runAction(SKAction.fadeOutWithDuration(0.25))
+        activeSliceFG.runAction(SKAction.fadeOutWithDuration(0.25))
+        
+    }
+    
+    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        if let touches = touches {
+            touchesEnded(touches, withEvent: event)
+        }
     }
 }
