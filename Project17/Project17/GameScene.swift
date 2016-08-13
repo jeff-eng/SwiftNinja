@@ -71,7 +71,7 @@ class GameScene: SKScene {
     }
     
     func createLives() {
-        for i in 0..<3 {
+        for i in 0 ..< 3 {
             // create instance of the sprite node
             let spriteNode = SKSpriteNode(imageNamed: "sliceLife")
             // position the sprite node
