@@ -27,6 +27,9 @@ class GameScene: SKScene {
     // Store swipe points
     var activeSlicePoints = [CGPoint]()
     
+    // Swoosh sound
+    var swooshSoundActive = false
+    
     override func didMoveToView(view: SKView) {
         // Create instance of sprite node
         let background = SKSpriteNode(imageNamed: "sliceBackground")
@@ -86,6 +89,11 @@ class GameScene: SKScene {
         
         // Redraw the slice shape
         redrawActiveSlice()
+        
+        // If swooshSoundActive is not false, play the swoosh sound
+        if !swooshSoundActive {
+            playSwooshSound()
+        }
     }
     
     // This method gets called when user finishes touching the screen
@@ -182,6 +190,23 @@ class GameScene: SKScene {
         // 4) Finally, it needs to update the slice shape paths so they get drawn using their designs - i.e., line width and color
         activeSliceBG.path = path.CGPath
         activeSliceFG.path = path.CGPath
+    }
+    
+    func playSwooshSound() {
+        // Set the property to true
+        swooshSoundActive = true
+        
+        // Create a random number (this random number method is in the Helper.swift file) and use string interpolation to select the sound file name and save it to a constant
+        let randomNumber = RandomInt(min: 1, max: 3)
+        let soundName = "swoosh\(randomNumber).caf"
+        
+        // Store sound file
+        let swooshSound = SKAction.playSoundFileNamed(soundName, waitForCompletion: true)
+        
+        // Run the sound file and then set the swoosh sound property to false after sound played
+        runAction(swooshSound) { [unowned self] in
+            self.swooshSoundActive = false
+        }
     }
     
 }
