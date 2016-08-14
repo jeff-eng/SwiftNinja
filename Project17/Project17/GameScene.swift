@@ -24,6 +24,12 @@ class GameScene: SKScene {
     var activeSliceBG: SKShapeNode!
     var activeSliceFG: SKShapeNode!
     
+    // Store swipe points
+    var activeSlicePoints = [CGPoint]()
+    
+    // Swoosh sound
+    var swooshSoundActive = false
+    
     override func didMoveToView(view: SKView) {
         // Create instance of sprite node
         let background = SKSpriteNode(imageNamed: "sliceBackground")
@@ -48,8 +54,60 @@ class GameScene: SKScene {
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-
+        super.touchesBegan(touches, withEvent: event)
         
+        // 1) Remove all existing points in the activeSlicePoints array, because we're starting fresh
+        activeSlicePoints.removeAll(keepCapacity: true)
+        
+        // 2) Get the touch location and add it to the activeSlicePoints array
+        if let touch = touches.first {
+            let location = touch.locationInNode(self)
+            activeSlicePoints.append(location)
+            
+            // 3) Call the (As yet unwritten) redrawActiveSlice() method to clear the slice shapes
+            redrawActiveSlice()
+            
+            // 4) Remove any actions that are currently attached to the slice shapes.  This will be important if they are in the middle of a fadeOutWithDuration() action
+            activeSliceBG.removeAllActions()
+            activeSliceFG.removeAllActions()
+            
+            // 5) Set both slice shapes to have an alpha value of 1 so they are fully visible.
+            activeSliceBG.alpha = 1
+            activeSliceFG.alpha = 1
+        }
+    }
+    
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        // Get the first touch object
+        guard let touch = touches.first else { return }
+        
+        // Store the location where user touched
+        let location = touch.locationInNode(self)
+        
+        // Add location where in the scene the user touched to the activeSlicePoints array
+        activeSlicePoints.append(location)
+        
+        // Redraw the slice shape
+        redrawActiveSlice()
+        
+        // If swooshSoundActive is not false, play the swoosh sound
+        if !swooshSoundActive {
+            playSwooshSound()
+        }
+    }
+    
+    // This method gets called when user finishes touching the screen
+    override func touchesEnded(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        // Make the slice shapes fade out
+        activeSliceBG.runAction(SKAction.fadeOutWithDuration(0.25))
+        activeSliceFG.runAction(SKAction.fadeOutWithDuration(0.25))
+        
+    }
+    
+    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        if let touches = touches {
+            touchesEnded(touches, withEvent: event)
+        }
     }
    
     override func update(currentTime: CFTimeInterval) {
@@ -108,4 +166,47 @@ class GameScene: SKScene {
         addChild(activeSliceFG)
     
     }
+    
+    func redrawActiveSlice() {
+        // 1) If we have fewer than two points in our array, we don't have enough data to draw a line so it needs to clear the shapes and exit the method
+        if activeSlicePoints.count < 2 {
+            activeSliceBG.path = nil
+            activeSliceFG.path = nil
+            return
+        }
+        
+        // 2) If we have more than 12 slice points in our array, we need to remove the oldest ones until we have at most 12 - this stops the swipe shapes from becoming too long.
+        while activeSlicePoints.count > 12 {
+            activeSlicePoints.removeAtIndex(0)
+        }
+        
+        // 3) It needs to start its line at the position of the first swipe point, then go through each of the others drawing lines to each point.
+        let path = UIBezierPath()
+        path.moveToPoint(activeSlicePoints[0])
+        
+        for i in 1 ..< activeSlicePoints.count {
+            path.addLineToPoint(activeSlicePoints[i])
+        }
+        // 4) Finally, it needs to update the slice shape paths so they get drawn using their designs - i.e., line width and color
+        activeSliceBG.path = path.CGPath
+        activeSliceFG.path = path.CGPath
+    }
+    
+    func playSwooshSound() {
+        // Set the property to true
+        swooshSoundActive = true
+        
+        // Create a random number (this random number method is in the Helper.swift file) and use string interpolation to select the sound file name and save it to a constant
+        let randomNumber = RandomInt(min: 1, max: 3)
+        let soundName = "swoosh\(randomNumber).caf"
+        
+        // Store sound file
+        let swooshSound = SKAction.playSoundFileNamed(soundName, waitForCompletion: true)
+        
+        // Run the sound file and then set the swoosh sound property to false after sound played
+        runAction(swooshSound) { [unowned self] in
+            self.swooshSoundActive = false
+        }
+    }
+    
 }
