@@ -5,7 +5,12 @@ Repo following Project 17: Swifty Ninja at hackingwithswift.com
 
 ## Concepts learned/practiced
 * ```SKShapeNode```
-* Enums
+* Enums(enumerations) - defines common type for a group of related values
+  ```Swift
+  enum ForceBomb {
+    case Never, Always, Default
+  }
+  ```
 * Defining gravity using CGVector
   * Example from project:
     ```

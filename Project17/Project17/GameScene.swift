@@ -8,8 +8,13 @@
 
 import SpriteKit
 
+enum ForceBomb {
+    case Never, Always, Default
+}
+
 class GameScene: SKScene {
     
+    // Score related properties
     var gameScore: SKLabelNode!
     var score: Int = 0 {
         didSet {
@@ -29,6 +34,9 @@ class GameScene: SKScene {
     
     // Swoosh sound
     var swooshSoundActive = false
+    
+    // Array to track enemies currently active in the scene
+    var activeEnemies = [SKSpriteNode]()
     
     override func didMoveToView(view: SKView) {
         // Create instance of sprite node
@@ -209,4 +217,35 @@ class GameScene: SKScene {
         }
     }
     
+    func createEnemy(forceBomb forceBomb: ForceBomb = .Default) {
+        var enemy: SKSpriteNode
+        
+        //Create random integer that determines what type of enemy is created
+        var enemyType = RandomInt(min: 0, max: 6)
+        
+        if forceBomb == .Never {
+            enemyType = 1
+        } else if forceBomb == .Always {
+            enemyType = 0
+        }
+        
+        if enemyType == 0 {
+            // insert bomb code here
+        } else {
+            // Create Sprite node instance
+            enemy = SKSpriteNode(imageNamed: "penguin")
+            // Play sound
+            runAction(SKAction.playSoundFileNamed("launch.caf", waitForCompletion: false))
+            // Assign name to the sprite node created
+            enemy.name = "enemy"
+        }
+        
+        // position code goes here
+        
+        // Add the Sprite node as a child to the Game Scene
+        addChild(enemy)
+        // Add the sprite node to the array of active enemies that we are keeping track of
+        activeEnemies.append(enemy)
+        
+    }
 }
