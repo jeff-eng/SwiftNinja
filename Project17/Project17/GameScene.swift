@@ -9,6 +9,10 @@
 import SpriteKit
 import AVFoundation
 
+enum SequenceType: Int {
+    case OneNoBomb, One, TwoWithOneBomb, Two, Three, Four, Chain, FastChain
+}
+
 enum ForceBomb {
     case Never, Always, Default
 }
@@ -42,6 +46,15 @@ class GameScene: SKScene {
     // Array to track enemies currently active in the scene
     var activeEnemies = [SKSpriteNode]()
     
+    var popupTime = 0.9 //amt of time to wait between last enemy destroyed and new one created
+    var sequence: [SequenceType]! //an array of our SequenceType enum that defines what enemies to create
+    var sequencePosition = 0 //where we are right now in the game
+    var chainDelay = 3.0 //how long to wait before creating a new enemy when sequence type is .Chain or .FastChain.
+    var nextSequenceQueued = true //used to keep track of when all enemies are destroyed and we're ready to create more
+    
+    
+    
+    
     override func didMoveToView(view: SKView) {
         // Create instance of sprite node
         let background = SKSpriteNode(imageNamed: "sliceBackground")
@@ -63,6 +76,16 @@ class GameScene: SKScene {
         createLives()
         createSlices()
         
+        sequence = [.OneNoBomb, .OneNoBomb, .TwoWithOneBomb, .TwoWithOneBomb, .Three, .One, .Chain]
+        
+        for _ in 0 ... 1000 {
+            let nextSequence = SequenceType(rawValue: RandomInt(min: 2, max: 7))!
+            sequence.append(nextSequence)
+        }
+        
+        RunAfterDelay(2) { [unowned self] in
+            self.tossEnemies()
+        }
     }
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -123,6 +146,26 @@ class GameScene: SKScene {
     }
    
     override func update(currentTime: CFTimeInterval) {
+        if activeEnemies.count > 0 {
+            for node in activeEnemies {
+                if node.position.y < -140 {
+                    node.removeFromParent()
+                    
+                    if let index = activeEnemies.indexOf(node) {
+                        activeEnemies.removeAtIndex(index)
+                    }
+                }
+            }
+        } else {
+            if !nextSequenceQueued {
+                RunAfterDelay(popupTime) { [unowned self] in
+                    self.tossEnemies()
+                }
+                
+                nextSequenceQueued = true
+            }
+        }
+        
         var bombCount = 0
         
         for node in activeEnemies {
@@ -319,6 +362,62 @@ class GameScene: SKScene {
         addChild(enemy)
         // Add the sprite node to the array of active enemies that we are keeping track of
         activeEnemies.append(enemy)
+        
+    }
+    
+    func tossEnemies() {
+        popupTime *= 0.991
+        chainDelay *= 0.99
+        physicsWorld.speed *= 1.02
+        
+        let sequenceType = sequence[sequencePosition]
+        
+        switch sequenceType {
+        case .OneNoBomb:
+            createEnemy(forceBomb: .Never)
+            
+        case .One:
+            createEnemy()
+            
+        case .TwoWithOneBomb:
+            createEnemy(forceBomb: .Never)
+            createEnemy(forceBomb: .Always)
+            
+        case .Two:
+            for _ in 1...2 {
+                createEnemy()
+            }
+            
+        case .Three:
+            for _ in 1...3 {
+                createEnemy()
+            }
+        
+        case .Four:
+            for _ in 1...4 {
+                createEnemy()
+            }
+        
+        case .Chain:
+            createEnemy()
+            
+            RunAfterDelay(chainDelay / 5.0) { [unowned self] in self.createEnemy() }
+            RunAfterDelay(chainDelay / 5.0 * 2) { [unowned self] in self.createEnemy() }
+            RunAfterDelay(chainDelay / 5.0 * 3) { [unowned self] in self.createEnemy() }
+            RunAfterDelay(chainDelay / 5.0 * 4) { [unowned self] in self.createEnemy() }
+
+        case .FastChain:
+            createEnemy()
+            
+            RunAfterDelay(chainDelay / 10.0) { [unowned self] in self.createEnemy() }
+            RunAfterDelay(chainDelay / 10.0 * 2) { [unowned self] in self.createEnemy() }
+            RunAfterDelay(chainDelay / 10.0 * 3) { [unowned self] in self.createEnemy() }
+            RunAfterDelay(chainDelay / 10.0 * 4) { [unowned self] in self.createEnemy() }
+        }
+        
+        sequencePosition += 1
+        
+        nextSequenceQueued = false
         
     }
 }
