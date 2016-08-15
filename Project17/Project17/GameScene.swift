@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 enum ForceBomb {
     case Never, Always, Default
@@ -34,6 +35,9 @@ class GameScene: SKScene {
     
     // Swoosh sound
     var swooshSoundActive = false
+    
+    // Bomb sound effect
+    var bombSoundEffect: AVAudioPlayer!
     
     // Array to track enemies currently active in the scene
     var activeEnemies = [SKSpriteNode]()
@@ -231,7 +235,34 @@ class GameScene: SKScene {
         
         // Zero will be considered a bomb
         if enemyType == 0 {
-            // insert bomb code here
+            // 1) Create a new SKSpriteNode that will hold the fuse and the bomb image as children, setting its Z position to be 1.
+            enemy = SKSpriteNode()
+            enemy.zPosition = 1
+            enemy.name = "bombContainer"
+            
+            // 2) Create the bomb image, name it "bomb" and add it to the container.
+            let bombImage = SKSpriteNode(imageNamed: "sliceBomb")
+            bombImage.name = "bomb"
+            enemy.addChild(bombImage)
+            
+            // 3) If the bomb fuse sound effect is playing, stop it and destroy it.
+            if bombSoundEffect != nil {
+                bombSoundEffect.stop()
+                bombSoundEffect = nil
+            }
+            
+            // 4) Create a new bomb fuse sound effect, then play it.
+            let path = NSBundle.mainBundle().pathForResource("sliceBombFuse.caf", ofType: nil)!
+            let url = NSURL(fileURLWithPath: path)
+            let sound = try! AVAudioPlayer(contentsOfURL: url)
+            bombSoundEffect = sound
+            sound.play()
+            
+            // 5) Create a particle emitter node, position it so that it's at the end of the bomb image's fuse, and add it to the container.
+            let emitter = SKEmitterNode(fileNamed: "sliceFuse")!
+            emitter.position = CGPoint(x: 76, y: 64)
+            enemy.addChild(emitter)
+            
         } else {
             // Create Sprite node instance
             enemy = SKSpriteNode(imageNamed: "penguin")
