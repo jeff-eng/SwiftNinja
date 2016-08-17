@@ -129,6 +129,44 @@ class GameScene: SKScene {
         if !swooshSoundActive {
             playSwooshSound()
         }
+        
+        let nodes = nodesAtPoint(location)
+        
+        for node in nodes {
+            if node.name == "enemy" {
+                // 1) Create a particle effect over the penguin
+                let emitter = SKEmitterNode(fileNamed: "sliceHitEnemy")!
+                emitter.position = node.position
+                addChild(emitter)
+                
+                // 2) Clear its node name so that it can't be swiped repeatedly
+                node.name = ""
+                
+                // 3) Disable the dynamic  of its physics body so that it doesn't carry on falling
+                node.physicsBody!.dynamic = false
+                
+                // 4) Make the penguin scale out and fade out at the same time
+                let scaleOut = SKAction.scaleTo(0.001, duration: 0.2)
+                let fadeOut = SKAction.fadeOutWithDuration(0.2)
+                let group = SKAction.group([scaleOut, fadeOut])
+                
+                // 5) After making the penguin scale out and fade out, we should remove it from the scene
+                let seq = SKAction.sequence([group, SKAction.removeFromParent()])
+                node.runAction(seq)
+                
+                // 6) Add one to the player's score
+                score += 1
+                
+                // 7) Remove the enemy from our activeEnemies array
+                let index = activeEnemies.indexOf(node as! SKSpriteNode)
+                activeEnemies.removeAtIndex(index!)
+                
+                // 8) Play a sound so the player knows they hit the penguin
+                runAction(SKAction.playSoundFileNamed("whack.caf", waitForCompletion: false))
+            } else if node.name == "bomb" {
+                // destroy bomb
+            }
+        }
     }
     
     // This method gets called when user finishes touching the screen
