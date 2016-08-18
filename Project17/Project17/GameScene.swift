@@ -164,7 +164,25 @@ class GameScene: SKScene {
                 // 8) Play a sound so the player knows they hit the penguin
                 runAction(SKAction.playSoundFileNamed("whack.caf", waitForCompletion: false))
             } else if node.name == "bomb" {
-                // destroy bomb
+                let emitter = SKSpriteNode(fileNamed: "sliceHitBomb")!
+                emitter.position = node.position
+                addChild(emitter)
+                
+                node.name = ""
+                node.parent!.physicsBody!.dynamic = false
+                
+                let scaleOut = SKAction.scaleTo(0.001, duration: 0.2)
+                let fadeOut = SKAction.fadeOutWithDuration(0.2)
+                let group = SKAction.group([scaleOut, fadeOut])
+                
+                let seq = SKAction.sequence([group, SKAction.removeFromParent()])
+                node.runAction(seq)
+                
+                let index = activeEnemies.indexOf(node as! SKSpriteNode)!
+                activeEnemies.removeAtIndex(index)
+                
+                runAction(SKAction.playSoundFileNamed("explosion.caf", waitForCompletion: false))
+                endGame(triggeredByBomb: true)
             }
         }
     }
