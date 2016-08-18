@@ -490,4 +490,32 @@ class GameScene: SKScene {
         nextSequenceQueued = false
         
     }
+    
+    func subtractLife() {
+        // subtract 1 from lives property when penguin falls off screen w/out being sliced
+        lives -= 1
+        
+        // Play sound to denote life being lost
+        runAction(SKAction.playSoundFileNamed("wrong.caf", waitForCompletion: false))
+        
+        var life: SKSpriteNode
+        
+        // update the images in the liveImages array so correct number are crossed off
+        if lives == 2 {
+            life = livesImages[0]
+        } else if lives == 1 {
+            life = livesImages[1]
+        } else {
+            life = livesImages[2]
+            endgame(triggeredByBomb: false)
+        }
+        
+        // Using SKTexture to modify contents of Sprite without having to recreate it
+        life.texture = SKTexture(imageNamed: "sliceLifeGone")
+        
+        // Scale the life being lost to slightly larger, then scale back down
+        life.xScale = 1.3
+        life.yScale = 1.3
+        life.runAction(SKAction.scaleTo(1, duration: 0.1))
+    }
 }
