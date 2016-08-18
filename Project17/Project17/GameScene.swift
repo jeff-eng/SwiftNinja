@@ -52,7 +52,8 @@ class GameScene: SKScene {
     var chainDelay = 3.0 //how long to wait before creating a new enemy when sequence type is .Chain or .FastChain.
     var nextSequenceQueued = true //used to keep track of when all enemies are destroyed and we're ready to create more
     
-    
+    // Property to keep track of status of whether game has ended
+    var gameEnded = false
     
     
     override func didMoveToView(view: SKView) {
@@ -113,6 +114,10 @@ class GameScene: SKScene {
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if gameEnded {
+            return
+        }
+        
         // Get the first touch object
         guard let touch = touches.first else { return }
         
@@ -436,6 +441,10 @@ class GameScene: SKScene {
     }
     
     func tossEnemies() {
+        if gameEnded {
+            return
+        }
+        
         popupTime *= 0.991
         chainDelay *= 0.99
         physicsWorld.speed *= 1.02
@@ -507,7 +516,7 @@ class GameScene: SKScene {
             life = livesImages[1]
         } else {
             life = livesImages[2]
-            endgame(triggeredByBomb: false)
+            endGame(triggeredByBomb: false)
         }
         
         // Using SKTexture to modify contents of Sprite without having to recreate it
@@ -517,5 +526,28 @@ class GameScene: SKScene {
         life.xScale = 1.3
         life.yScale = 1.3
         life.runAction(SKAction.scaleTo(1, duration: 0.1))
+    }
+    
+    func endGame(triggeredByBomb triggeredByBomb: Bool) {
+        if gameEnded {
+            return
+        }
+        
+        // set the gameEnded property to true, adjust physics world speed to 0, and disable user interaction
+        gameEnded = true
+        physicsWorld.speed = 0
+        userInteractionEnabled = false
+        
+        // Stop bomb sound effect, then set the bomb sound effect to nil
+        if bombSoundEffect != nil {
+            bombSoundEffect.stop()
+            bombSoundEffect = nil
+        }
+        
+        if triggeredByBomb {
+            for index in 0...2 {
+            livesImages[index].texture = SKTexture(imageNamed: "sliceLifeGone")
+            }
+        }
     }
 }
