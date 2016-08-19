@@ -1,7 +1,8 @@
 # SwiftyNinja
 Repo following Project 17: Swifty Ninja at hackingwithswift.com
 
-![Project 17 Swift Ninja game screenshot](project17-screenshot.png)
+![Project 17 Swift Ninja game screenshot 1](project17-screenshot1.png)
+![Project 17 Swift Ninja game screenshot 2](project17-screenshot2.png)
 
 ## Concepts learned/practiced
 * ```SKShapeNode```
@@ -19,13 +20,21 @@ Repo following Project 17: Swifty Ninja at hackingwithswift.com
     }
     ```
 
-
 * Defining gravity using CGVector
   * Example from project:
-    ```
+    ```Swift
     physicsWorld.gravity = CGVector(dx: 0, dy: -6)
     physicsWorld.speed = 0.85
 
+    ```
+* Using ```AVAudioPlayer```
+* ```UIBezierPath```
+* Default method parameters
+  * Example:
+    ```Swift
+    func createEnemy(forceBomb forceBomb: ForceBomb = .Default) {
+      // some sweet Swift code here...
+    }
     ```
 
 ## Attributions

@@ -100,7 +100,7 @@ class GameScene: SKScene {
             let location = touch.locationInNode(self)
             activeSlicePoints.append(location)
             
-            // 3) Call the (As yet unwritten) redrawActiveSlice() method to clear the slice shapes
+            // 3) Call the redrawActiveSlice() method to clear the slice shapes
             redrawActiveSlice()
             
             // 4) Remove any actions that are currently attached to the slice shapes.  This will be important if they are in the middle of a fadeOutWithDuration() action
@@ -163,14 +163,14 @@ class GameScene: SKScene {
                 score += 1
                 
                 // 7) Remove the enemy from our activeEnemies array
-                let index = activeEnemies.indexOf(node as! SKSpriteNode)
-                activeEnemies.removeAtIndex(index!)
+                let index = activeEnemies.indexOf(node as! SKSpriteNode)!
+                activeEnemies.removeAtIndex(index)
                 
                 // 8) Play a sound so the player knows they hit the penguin
                 runAction(SKAction.playSoundFileNamed("whack.caf", waitForCompletion: false))
             } else if node.name == "bomb" {
                 let emitter = SKSpriteNode(fileNamed: "sliceHitBomb")!
-                emitter.position = node.position
+                emitter.position = node.parent!.position
                 addChild(emitter)
                 
                 node.name = ""
@@ -183,7 +183,7 @@ class GameScene: SKScene {
                 let seq = SKAction.sequence([group, SKAction.removeFromParent()])
                 node.runAction(seq)
                 
-                let index = activeEnemies.indexOf(node as! SKSpriteNode)!
+                let index = activeEnemies.indexOf(node.parent as! SKSpriteNode)!
                 activeEnemies.removeAtIndex(index)
                 
                 runAction(SKAction.playSoundFileNamed("explosion.caf", waitForCompletion: false))
@@ -207,6 +207,23 @@ class GameScene: SKScene {
     }
    
     override func update(currentTime: CFTimeInterval) {
+        var bombCount = 0
+        
+        for node in activeEnemies {
+            if node.name == "bombContainer" {
+                bombCount += 1
+                break
+            }
+        }
+        
+        if bombCount == 0 {
+            // no bombs - stop the fuse sound!
+            if bombSoundEffect != nil {
+                bombSoundEffect.stop()
+                bombSoundEffect = nil
+            }
+        }
+        
         if activeEnemies.count > 0 {
             for node in activeEnemies {
                 if node.position.y < -140 {
@@ -241,22 +258,7 @@ class GameScene: SKScene {
             }
         }
         
-        var bombCount = 0
         
-        for node in activeEnemies {
-            if node.name == "bombContainer" {
-                bombCount += 1
-                break
-            }
-        }
-        
-        if bombCount == 0 {
-            // no bombs - stop the fuse sound!
-            if bombSoundEffect != nil {
-                bombSoundEffect.stop()
-                bombSoundEffect = nil
-            }
-        }
     }
     
     func createScore() {
